@@ -1,0 +1,35 @@
+﻿
+@model IEnumerable<Quiz>
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h2>Quiz List</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Quiz Name</th>
+            <th>Quiz Type</th>
+            <th>Time Limit</th>
+           @* <th>Questions</th>*@
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var quiz in Model)
+        {
+            <tr>
+                <td>@quiz.QuizName</td>
+                <td>@quiz.QuizType</td>
+                <td>@quiz.TimeLimit</td>
+               @* <td>@quiz.Question.Count()</td>*@
+                <td><a asp-controller="Quiz" asp-action="Details" asp-route-id="@quiz.QuizID">Details</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>

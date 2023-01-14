@@ -1,0 +1,29 @@
+﻿@model IEnumerable<QuizApp.Models.Question>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Question ID</th>
+            <th>Category ID</th>
+            <th>Question Text</th>
+            <th>Question Type</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.QuestionID</td>
+                <td>@item.CategoryID</td>
+                <td>@item.QuestionText</td>
+                <td>@item.QuestionType</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.QuestionID" class="btn btn-primary">Edit</a>
+                     <a asp-action="Delete" asp-route-id="@item.QuestionID" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a asp-action="Create" class="btn btn-success">Create New Question</a>

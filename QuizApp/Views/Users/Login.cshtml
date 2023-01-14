@@ -1,0 +1,29 @@
+﻿@model Users
+
+@{
+    ViewBag.Title = "Login";
+}
+
+<h2>Login</h2>
+
+<form asp-controller="Users" asp-action="Login" method="post">
+    <div class="form-group">
+        <label asp-for="Email"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Password"></label>
+        <input asp-for="Password" class="form-control" type="password" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Login" class="btn btn-primary" />
+    </div>
+    <div class="form-group">
+        <a asp-controller="Users" asp-action="Registration">Don't have an account? Register here</a>
+    </div>
+    <div class="form-group">
+        <p class="text-danger">@ViewBag.Error</p>
+    </div>
+</form>

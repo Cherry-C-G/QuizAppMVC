@@ -1,0 +1,88 @@
+﻿@model IEnumerable<QuizApp.Models.Question>
+
+
+<h2>List of Questions</h2>
+<form asp-action="Index">
+    <div class="form-group">
+        <label for="questionType">Filter by Type:</label>
+        <select class="form-control" id="questionType" name="questionType">
+            <option value="">All</option>
+            <option value="Math">Math</option>
+            <option value="Science">Science</option>
+            <option value="History">History</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="quizID">Filter by Quiz:</label>
+        <select class="form-control" id="quizID" name="quizID">
+            <option value="">All</option>
+            @foreach (var quiz in ViewBag.Quizzes)
+            {
+                <option value="@quiz.QuizID">@quiz.QuizName</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="categoryID">Filter by Category:</label>
+        <select class="form-control" id="categoryID" name="categoryID">
+            <option value="">All</option>
+            @foreach (var category in ViewBag.Categories)
+            {
+                <option value="@category.CategoryID">@category.CategoryName</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Question Text</th>
+            <th>Type</th>
+            <th>Quiz</th>
+            <th>Category</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var question in Model)
+        {
+            <tr>
+                <td>@question.QuestionText</td>
+                <td>@question.QuestionType</td>
+@*                <td>@question.Quiz.QuizName</td>
+                <td>@question.Category.CategoryName</td>*@
+                <td>
+                    <a asp-action="Details" asp-route-id="@question.QuestionID" class="btn btn-primary">View</a>
+                    <a asp-action="Edit" asp-route-id="@question.QuestionID" class="btn btn-primary">Edit</a>
+<a asp-action="Details" asp-route-id="@question.QuestionID" class="btn btn-secondary">Details</a>
+<a asp-action="Delete" asp-route-id="@question.QuestionID" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this question?');">Delete</a>
+</td>
+</tr>
+}
+
+</table>
+</div>
+</div>
+</div>
+<div class="row">
+    <div class="col-12">
+        <a asp-action="Create" class="btn btn-primary float-right">Add New Question</a>
+    </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+@section Scripts {
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+}
+
+</body>
+</html>

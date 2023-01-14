@@ -1,0 +1,53 @@
+﻿@model Question
+<div>
+    <h3>Randomize Questions</h3>
+    <form asp-action="Randomize">
+        <div class="form-group">
+            <label>Select Quiz:</label>
+            <select asp-for="QuestionID" asp-items="@ViewBag.Quizzes"></select>
+        </div>
+        <div class="form-group">
+            <label>Select Category:</label>
+            <select asp-for="CategoryID" asp-items="@ViewBag.Categories"></select>
+        </div>
+@*        <div class="form-group">
+            <label>Number of Questions:</label>
+            <input asp-for="NumberOfQuestions" type="number" min="1" max="100" />
+        </div>*@
+        <div class="form-group">
+            <input type="submit" value="Randomize" class="btn btn-primary" />
+        </div>
+    </form>
+</div>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Question Text</th>
+            <th>Question Type</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+@*    <tbody>
+        @if (Model.Count == 0)
+        {
+            <tr>
+                <td colspan="3">No questions found.</td>
+            </tr>
+        }
+        else
+        {
+            foreach (var question in Model)
+            {
+                <tr>
+                    <td>@question.QuestionText</td>
+                    <td>@question.QuestionType</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@question.QuestionID">Details</a> |
+                        <a asp-action="Edit" asp-route-id="@question.QuestionID">Edit</a> |
+                        <a asp-action="Delete" asp-route-id="@question.QuestionID">Delete</a>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>*@
+</table>
