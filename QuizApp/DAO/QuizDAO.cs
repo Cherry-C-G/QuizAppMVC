@@ -65,6 +65,10 @@ namespace QuizApp.DAO
                 }
             }
         }
+
+
+
+
         /// <summary>
         /// GetAll() - Retrieves all quizzes
         /// </summary>
@@ -117,11 +121,27 @@ namespace QuizApp.DAO
                 }
             }
         }
-        /// <summary>
-        /// Delete(int id) - Deletes a specific quiz by its ID
-        /// </summary>
-        /// <param name="quizId"></param>
-        public void Delete(int quizId)
+
+        public string GetQuizName(int quizID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("SELECT QuizName FROM Quizzes WHERE QuizID = @quizID", connection))
+                {
+                    command.Parameters.AddWithValue("@quizID", quizID);
+
+                    return (string)command.ExecuteScalar();
+                }
+            }
+        }
+
+
+            /// <summary>
+            /// Delete(int id) - Deletes a specific quiz by its ID
+            /// </summary>
+            /// <param name="quizId"></param>
+            public void Delete(int quizId)
         {
             using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
@@ -155,6 +175,22 @@ namespace QuizApp.DAO
             }
 
         }
+
+        public void SubmitQuiz(int quizID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+
+                using (SqlCommand command = new SqlCommand("UPDATE Quiz SET IsCompleted = 1 WHERE QuizID = @QuizID", connection))
+                {
+                    command.Parameters.AddWithValue("@QuizID", quizID);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+
         /// <summary>
         /// GetQuestions(int quizID) - Retrieves all questions for a specific quiz
         /// </summary>
@@ -271,7 +307,7 @@ namespace QuizApp.DAO
         /// <param name="quizID"></param>
         /// <param name="userID"></param>
         /// <returns></returns>
-        public Dictionary<int, string> GetQuestionStyles(int quizID, int userID)
+        public Dictionary<int, string> GetQuestionStyles(int quizID, int userID, int currentQuestion)
         {
             Dictionary<int, string> styles = new Dictionary<int, string>();
             using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
@@ -297,6 +333,40 @@ namespace QuizApp.DAO
                 }
             }
             return styles;
+        }
+
+        public List<string> GetQuestionStyles(int quizID, int currentQuestion)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("SELECT qq.QuizQuestionID, a.IsCorrect FROM QuizQuestion qq JOIN Results r ON qq.QuizID = r.QuizID JOIN Answers a ON qq.AnswerID = a.AnswerID WHERE r.QuizID = @QuizID", connection))
+                {
+                    command.Parameters.AddWithValue("@QuizID", quizID);
+
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    List<string> questionStyles = new List<string>();
+
+                    while (reader.Read())
+                    {
+                        if ((int)reader["QuizQuestionID"] == currentQuestion)
+                        {
+                            questionStyles.Add("current");
+                        }
+                        else if ((bool)reader["IsCorrect"])
+                        {
+                            questionStyles.Add("correct");
+                        }
+                        else
+                        {
+                            questionStyles.Add("incorrect");
+                        }
+                    }
+
+                    return questionStyles;
+                }
+            }
         }
         /// <summary>
         /// GetShortAnswerQuestions(int quizID) - Retrieves all short answer questions for a quiz
@@ -461,7 +531,7 @@ namespace QuizApp.DAO
         /// <param name="quizID"></param>
         /// <param name="questionID"></param>
         /// <returns></returns>
-        public Question GetNavigatorQuestion(int quizID, int questionID)
+        public Question GetNavigatorQuestion(int quizID, int questionID, int currentQuestion)
         {
             using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
@@ -489,6 +559,7 @@ namespace QuizApp.DAO
                 }
             }
         }
+
 
     }
 }

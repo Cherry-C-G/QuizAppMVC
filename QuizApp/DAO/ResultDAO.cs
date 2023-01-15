@@ -77,6 +77,9 @@ namespace QuizApp.DAO
                 }
             }
         }
+
+
+
         /// <summary>
         ///  GetByQuizID(int quizID) - Retrieves all results for a specific quiz
         /// </summary>
@@ -111,6 +114,66 @@ namespace QuizApp.DAO
                 }
             }
         }
+
+        //public Result GetResult(int resultID)
+        //{
+        //    Result result = null;
+
+        //    using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+        //    {
+        //        connection.Open();
+
+        //        using (SqlCommand command = new SqlCommand("SELECT * FROM Results WHERE ResultID = @resultID", connection))
+        //        {
+        //            command.Parameters.AddWithValue("@resultID", resultID);
+        //            var reader = command.ExecuteReader();
+        //            if (reader.Read())
+        //            {
+        //                result = new Result
+        //                {
+        //                    ResultID = reader.GetInt32(0),
+        //                    UserID = reader.GetInt32(1),
+        //                    QuizID = reader.GetInt32(2),
+        //                    StartTime = reader.GetDateTime(3),
+        //                    EndTime = reader.GetDateTime(4),
+        //                    Score = reader.GetInt32(5)
+        //                };
+        //            }
+        //        }
+        //    }
+
+        //    return result;
+        //}
+
+        public Result GetResult(int resultID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand("SELECT * FROM Results WHERE ResultID = @ResultID", connection);
+                command.Parameters.AddWithValue("@ResultID", resultID);
+
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    return new Result
+                    {
+                        ResultID = (int)reader["ResultID"],
+                        UserID = (int)reader["UserID"],
+                        QuizID = (int)reader["QuizID"],
+                        StartTime = (DateTime)reader["StartTime"],
+                        EndTime = (DateTime)reader["EndTime"],
+                        Score = (int)reader["Score"]
+                    };
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
         /// <summary>
         /// GetAll() - Retrieves all results
         /// </summary>
@@ -143,6 +206,87 @@ namespace QuizApp.DAO
                 }
             }
         }
+
+        public void SaveResult(Result result)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("INSERT INTO Results (UserID, QuizID, StartTime, EndTime, Score) VALUES (@UserID, @QuizID, @StartTime, @EndTime, @Score)", connection);
+                command.Parameters.AddWithValue("@UserID", result.UserID);
+                command.Parameters.AddWithValue("@QuizID", result.QuizID);
+                command.Parameters.AddWithValue("@StartTime", result.StartTime);
+                command.Parameters.AddWithValue("@EndTime", result.EndTime);
+                command.Parameters.AddWithValue("@Score", result.Score);
+                command.ExecuteNonQuery();
+            }
+        }
+
+
+    
+
+
+
+        public int CalculateScore(int quizID, int userID, object answerText)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM QuizQuestions WHERE QuizID = @quizID AND UserID = @userID AND AnswerText = @answerText", connection);
+                command.Parameters.AddWithValue("@quizID", quizID);
+                command.Parameters.AddWithValue("@userID", userID);
+                command.Parameters.AddWithValue("@answerText", answerText);
+                int score = (int)command.ExecuteScalar();
+                return score;
+            }
+        }
+
+
+        public void SaveScore(int userID, int quizID, int score)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                SqlCommand cmd = new SqlCommand("INSERT INTO Results (UserID, QuizID, Score, StartTime, EndTime) VALUES (@UserID, @QuizID, @Score, @StartTime, @EndTime)", connection);
+                cmd.Parameters.AddWithValue("@UserID", userID);
+                cmd.Parameters.AddWithValue("@QuizID", quizID);
+                cmd.Parameters.AddWithValue("@Score", score);
+                cmd.Parameters.AddWithValue("@StartTime", DateTime.Now);
+                cmd.Parameters.AddWithValue("@EndTime", DateTime.Now);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+            public List<Result> GetResults(int quizID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("SELECT * FROM Results", connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        List<Result> results = new List<Result>();
+                        while (reader.Read())
+                        {
+                            results.Add(new Result
+                            {
+                                ResultID = (int)reader["ResultID"],
+                                UserID = (int)reader["UserID"],
+                                QuizID = (int)reader["QuizID"],
+                                StartTime = (DateTime)reader["StartTime"],
+                                EndTime = (DateTime)reader["EndTime"],
+                                Score = (int)reader["Score"]
+                            });
+                        }
+                        return results;
+                    }
+                }
+            }
+
+
+        }
+
         /// <summary>
         /// Insert(Result result) - Inserts a new result into the database
         /// </summary>

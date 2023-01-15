@@ -23,6 +23,10 @@ namespace QuizApp.Controllers
             _userDAO = usersDAO;
             _quizDAO = quizDAO;
         }
+        /// <summary>
+        /// Register - for handling user registration
+        /// </summary>
+        /// <returns></returns>
         public ActionResult Registration()
         {
             return View();
@@ -51,7 +55,10 @@ namespace QuizApp.Controllers
             return View();
         }
 
-
+        /// <summary>
+        /// Login - for handling user login
+        /// </summary>
+        /// <returns></returns>
         public ActionResult Login()
         {
             return View();
@@ -90,6 +97,10 @@ namespace QuizApp.Controllers
             var quizzes = _quizDAO.GetAll();
             return View(quizzes);
         }
+        /// <summary>
+        /// Logout - for handling user logout
+        /// </summary>
+        /// <returns></returns>
         [Authorize]
         //[AllowAnonymous]
         public async Task<IActionResult> Logout()
@@ -98,6 +109,96 @@ namespace QuizApp.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        /// <summary>
+        /// UpdatePassword - for handling password updates
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="newPassword"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult UpdatePassword(string email, string newPassword)
+        {
+            try
+            {
+                _userDAO.UpdatePassword(email, newPassword);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        /// <summary>
+        /// UpdateRole - for handling updates to a user's role
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <param name="role"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult UpdateRole(int userID, string role)
+        {
+            try
+            {
+                _userDAO.UpdateRole(userID, role);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+        /// <summary>
+        /// Search - for handling searches for users based on keyword
+        /// </summary>
+        /// <param name="keyword"></param>
+        /// <returns></returns>
+        public ActionResult Search(string keyword)
+        {
+            UsersDAO usersDAO = _userDAO;
+            List<Users> users = usersDAO.Search(keyword);
+            return View(users);
+        }
+
+        /// <summary>
+        /// IsEmailExist - for checking if a given email address already exists in the database
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+
+        //public ActionResult IsEmailExist(string email)
+        //{
+        //    UsersDAO usersDAO = _userDAO;
+        //    if (usersDAO.IsEmailExist(email))
+        //    {
+        //        return Json(data: true, JsonRequestBehavior.AllowGet);
+        //    }
+        //    else
+        //    {
+        //        return Json(data: false, JsonRequestBehavior.AllowGet);
+        //    }
+        //}
+
+        /// <summary>
+        /// IsUserValid - for checking if a given email and password combination is valid.
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public ActionResult IsUserValid(string email, string password)
+        {
+            UsersDAO usersDAO = _userDAO;
+            bool isValid = usersDAO.IsUserValid(email, password);
+            if (isValid)
+            {
+                return Json(new { success = true });
+            }
+            else
+            {
+                return Json(new { success = false });
+            }
+        }
 
     }
 }

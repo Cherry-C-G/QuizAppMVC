@@ -6,5 +6,6 @@
         public string QuizName { get; set; }
         public string QuizType { get; set; }
         public int TimeLimit { get; set; }
+        public int PassingScore { get; internal set; }
     }
 }

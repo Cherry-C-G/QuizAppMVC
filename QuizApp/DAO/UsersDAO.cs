@@ -108,11 +108,31 @@ namespace QuizApp.DAO
                 }
             }
         }
-        /// <summary>
-        /// Delete(int id) - Deletes a specific user by their ID
-        /// </summary>
-        /// <param name="userId"></param>
-        public void Delete(int userId)
+
+      
+
+        public string GetFullName(int userID)
+        {
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+
+                var command = new SqlCommand("SELECT FullName FROM Users WHERE UserID = @userID", connection);
+                command.Parameters.AddWithValue("@userID", userID);
+
+                var fullName = (string)command.ExecuteScalar();
+
+                return fullName;
+            }
+        }
+    
+
+
+    /// <summary>
+    /// Delete(int id) - Deletes a specific user by their ID
+    /// </summary>
+    /// <param name="userId"></param>
+    public void Delete(int userId)
         {
             using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {

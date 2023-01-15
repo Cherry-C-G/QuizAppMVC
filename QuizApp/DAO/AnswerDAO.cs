@@ -27,6 +27,45 @@ namespace QuizApp.DAO
                 }
             }
         }
+
+        public void SubmitAnswer(Answer answer)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                SqlCommand cmd = new SqlCommand("INSERT INTO Answers (QuestionID, AnswerText, IsCorrect) VALUES (@questionID, @answerText, @isCorrect)", connection);
+                cmd.Parameters.AddWithValue("@questionID", answer.QuestionID);
+                cmd.Parameters.AddWithValue("@answerText", answer.AnswerText);
+                cmd.Parameters.AddWithValue("@isCorrect", answer.IsCorrect);
+
+                connection.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public bool CheckAnswer(int answerID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand("SELECT IsCorrect FROM Answers WHERE AnswerID = @answerID", connection);
+                command.Parameters.AddWithValue("@answerID", answerID);
+
+                var result = command.ExecuteScalar();
+                if (result != null)
+                {
+                    return (bool)result;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+        }
+
+
+
         /// <summary>
         /// Update(Answer answer) - This method can be used to update the answer details in the database.
         /// </summary>
@@ -48,6 +87,52 @@ namespace QuizApp.DAO
                 }
             }
         }
+
+        public Answer GetAnswer(int answerID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("SELECT * FROM Answers WHERE AnswerID = @answerID", connection))
+                {
+                    command.Parameters.AddWithValue("@answerID", answerID);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new Answer()
+                            {
+                                AnswerID = (int)reader["AnswerID"],
+                                QuestionID = (int)reader["QuestionID"],
+                                AnswerText = (string)reader["AnswerText"],
+                                IsCorrect = (bool)reader["IsCorrect"]
+                            };
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        public void MarkAnswer(int answerID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+
+                // Update the answer record in the database
+                var updateCommand = new SqlCommand("UPDATE Answers SET IsCorrect = 1 WHERE AnswerID = @answerID", connection);
+                updateCommand.Parameters.AddWithValue("@answerID", answerID);
+
+                updateCommand.ExecuteNonQuery();
+            }
+        }
+
+
         /// <summary>
         /// Delete(int id) - This method can be used to delete an answer from the database.
         /// </summary>

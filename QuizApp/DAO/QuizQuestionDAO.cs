@@ -31,6 +31,8 @@ namespace QuizApp.DAO
                 }
             }
         }
+
+
         //public QuizQuestionDAO GetByID(int id)
         //{
         //    using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
@@ -92,6 +94,9 @@ namespace QuizApp.DAO
                 }
             }
         }
+
+
+
         /// <summary>
         /// GetByQuestionID(int questionID)
         /// </summary>
@@ -123,6 +128,39 @@ namespace QuizApp.DAO
                 }
             }
         }
+
+        public List<QuizQuestion> GetQuizQuestionsByResult(int resultID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("SELECT * FROM QuizQuestions WHERE ResultID = @resultID", connection))
+                {
+                    command.Parameters.AddWithValue("@resultID", resultID);
+                    List<QuizQuestion> quizQuestionList = new List<QuizQuestion>();
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            quizQuestionList.Add(new QuizQuestion()
+                            {
+                                QuizQuestionID = (int)reader["QuizQuestionID"],
+                                QuizID = (int)reader["QuizID"],
+                                QuestionID = (int)reader["QuestionID"],
+                                UserID = (int)reader["UserID"],
+                                AnswerID = (int)reader["AnswerID"],
+                                IsCorrect = (bool)reader["IsCorrect"]
+                            });
+                        }
+                    }
+                    return quizQuestionList;
+                }
+            }
+        }
+
+
+
+
         /// <summary>
         /// GetByAnswerID(int answerID)
         /// </summary>
@@ -154,6 +192,40 @@ namespace QuizApp.DAO
                 }
             }
         }
+
+        public List<QuizQuestion> GetAnswers(int quizID, int userID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+
+                using (SqlCommand command = new SqlCommand("SELECT * FROM QuizQuestions WHERE QuizID = @quizID AND UserID = @userID", connection))
+                {
+                    command.Parameters.AddWithValue("@quizID", quizID);
+                    command.Parameters.AddWithValue("@userID", userID);
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        List<QuizQuestion> quizQuestions = new List<QuizQuestion>();
+                        while (reader.Read())
+                        {
+                            quizQuestions.Add(new QuizQuestion
+                            {
+                                QuizQuestionID = (int)reader["QuizQuestionID"],
+                                QuizID = (int)reader["QuizID"],
+                                QuestionID = (int)reader["QuestionID"],
+                                UserID = (int)reader["UserID"],
+                                AnswerID = (int)reader["AnswerID"],
+                                AnsweredCorrectly = (bool)reader["AnsweredCorrectly"]
+                            });
+                        }
+                        return quizQuestions;
+                    }
+                }
+            }
+        }
+
+
         /// <summary>
         /// Update(QuizQuestion quizQuestion)
         /// </summary>
@@ -175,11 +247,34 @@ namespace QuizApp.DAO
                 }
             }
         }
-        /// <summary>
-        /// Delete(int id)
-        /// </summary>
-        /// <param name="id"></param>
-        public void Delete(int id)
+
+        public bool IsQuestionAnswered(int quizID, int currentQuestion)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM QuizQuestions WHERE QuizID = @quizID AND QuestionNumber = @currentQuestion AND AnswerText IS NOT NULL", connection);
+                command.Parameters.AddWithValue("@quizID", quizID);
+                command.Parameters.AddWithValue("@currentQuestion", currentQuestion);
+
+                int result = (int)command.ExecuteScalar();
+
+                if (result > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+            /// <summary>
+            /// Delete(int id)
+            /// </summary>
+            /// <param name="id"></param>
+            public void Delete(int id)
         {
             using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {

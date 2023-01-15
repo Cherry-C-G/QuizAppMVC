@@ -119,6 +119,147 @@ namespace QuizApp.DAO
                 }
             }
         }
+
+        public List<Question> GetQuestions(int quizID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("SELECT * FROM Questions ", connection))
+                {
+                    command.Parameters.AddWithValue("@quizID", quizID);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        List<Question> questionList = new List<Question>();
+                        while (reader.Read())
+                        {
+                            questionList.Add(new Question()
+                            {
+                                QuestionID = (int)reader["QuestionID"],
+                                QuestionText = (string)reader["QuestionText"],
+                                QuestionType = (string)reader["QuestionType"]
+                            });
+                        }
+                        return questionList;
+                    }
+                }
+            }
+        }
+
+        public Question GetNextQuestion(int quizID, int currentQuestion)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand("SELECT * FROM Questions WHERE QuizID = @quizID AND QuestionID = @currentQuestion + 1", connection);
+                command.Parameters.AddWithValue("@quizID", quizID);
+                command.Parameters.AddWithValue("@currentQuestion", currentQuestion);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return new Question
+                        {
+                            QuestionID = (int)reader["QuestionID"],
+                            QuestionText = (string)reader["QuestionText"],
+                            QuestionType = (string)reader["QuestionType"]
+                        };
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+        }
+
+        public void MarkQuestion(int questionID, bool isMarked)
+        {
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                SqlCommand cmd = new SqlCommand("update question set isMarked = @isMarked where questionID = @questionID", connection);
+                cmd.Parameters.AddWithValue("@questionID", questionID);
+                cmd.Parameters.AddWithValue("@isMarked", isMarked);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public bool CheckIfAllQuestionsAnswered(int quizID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                // Check if all questions have been answered
+                SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM QuizQuestions WHERE QuizID = @quizID AND AnswerID IS NULL", connection);
+                cmd.Parameters.AddWithValue("@quizID", quizID);
+                connection.Open();
+                int count = (int)cmd.ExecuteScalar();
+                if (count > 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        }
+        public List<Question> GetNavigatorQuestions(int quizID)
+        {
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                using (var command = new SqlCommand("SELECT QuestionID, QuestionText FROM Questions WHERE QuizID = @quizID", connection))
+                {
+                    command.Parameters.AddWithValue("@quizID", quizID);
+                    var reader = command.ExecuteReader();
+                    var questions = new List<Question>();
+                    while (reader.Read())
+                    {
+                        questions.Add(new Question
+                        {
+                            QuestionID = (int)reader["QuestionID"],
+                            QuestionText = (string)reader["QuestionText"]
+                        });
+                    }
+                    return questions;
+                }
+            }
+        }
+
+
+
+        public Question GetPreviousQuestions(int quizID, int currentQuestion)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand("SELECT * FROM Questions WHERE QuizID = @quizID AND QuestionID < @currentQuestion ORDER BY QuestionID DESC", connection);
+                command.Parameters.AddWithValue("@quizID", quizID);
+                command.Parameters.AddWithValue("@currentQuestion", currentQuestion);
+
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    return new Question
+                    {
+                        QuestionID = (int)reader["QuestionID"],
+                        QuestionText = (string)reader["QuestionText"],
+                        QuestionType = (string)reader["QuestionType"]
+                    };
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+
+
         /// <summary>
         /// Update(Question question) - Updates an existing question in the database
         /// </summary>
