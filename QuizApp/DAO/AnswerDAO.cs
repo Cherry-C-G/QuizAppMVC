@@ -117,6 +117,43 @@ namespace QuizApp.DAO
             }
         }
 
+        private Answer PopulateAnswerFromReader(SqlDataReader reader)
+        {
+            return new Answer
+            {
+                AnswerID = (int)reader["AnswerID"],
+                QuestionID = (int)reader["QuestionID"],
+                AnswerText = (string)reader["Content"],
+                IsCorrect = (bool)reader["IsCorrect"]
+            };
+        }
+
+        public List<Answer> GetAnswersByQuizId(int quizId)
+        {
+            List<Answer> answers = new List<Answer>();
+
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+
+                using (SqlCommand command = new SqlCommand("SELECT * FROM Answer WHERE QuizID = @quizId", connection))
+                {
+                    command.Parameters.AddWithValue("@quizId", quizId);
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            answers.Add(PopulateAnswerFromReader(reader));
+                        }
+                    }
+                }
+            }
+
+            return answers;
+        }
+
+
 
         public void MarkAnswer(int answerID)
         {

@@ -1,0 +1,23 @@
+﻿
+<table>
+    <thead>
+        <tr>
+            <th>Quiz ID</th>
+            <th>Quiz Name</th>
+            <th>Quiz Type</th>
+            <th>Time Limit</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var quiz in Model)
+        {
+            <tr>
+                <td>@quiz.QuizID</td>
+                <td>@quiz.QuizName</td>
+                <td>@quiz.QuizType</td>
+                <td>@quiz.TimeLimit</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a asp-controller="Quiz" asp-action="Create">Add a new Quiz</a>

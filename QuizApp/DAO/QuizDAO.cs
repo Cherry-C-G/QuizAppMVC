@@ -31,6 +31,148 @@ namespace QuizApp.DAO
                 }
             }
         }
+
+        public List<QuizQuestion> GetShortAnswerQuestionsByUser(int userID)
+        {
+            List<QuizQuestion> shortAnswerQuestions = new List<QuizQuestion>();
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                string sql = $"SELECT QuizQuestions.* FROM QuizQuestions JOIN Questions ON QuizQuestions.QuestionID = Questions.QuestionID JOIN Quizzes ON QuizQuestions.QuizID = Quizzes.QuizID WHERE Quizzes.QuizType = 'Short Answer' AND Quizzes.UserID = {userID}";
+                SqlCommand command = new SqlCommand(sql, connection);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    QuizQuestion quizQuestion = new QuizQuestion
+                    {
+                        QuizQuestionID = (int)reader["QuizQuestionID"],
+                        QuizID = (int)reader["QuizID"],
+                        QuestionID = (int)reader["QuestionID"],
+                        AnswerID = (int)reader["AnswerID"]
+                    };
+                    shortAnswerQuestions.Add(quizQuestion);
+                }
+            }
+            return shortAnswerQuestions;
+        }
+
+        public List<Quiz> GetAllByUserID(int id)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand("SELECT * FROM Quizzes WHERE UserID = @id", connection);
+                command.Parameters.AddWithValue("@id", id);
+
+                SqlDataReader reader = command.ExecuteReader();
+
+                List<Quiz> quizzes = new List<Quiz>();
+                while (reader.Read())
+                {
+                    quizzes.Add(new Quiz()
+                    {
+                        QuizID = (int)reader["QuizID"],
+                        QuizName = (string)reader["QuizName"],
+                        QuizType = (string)reader["QuizType"],
+                        TimeLimit = (int)reader["TimeLimit"],
+                        PassingScore = (int)reader["PassingScore"],
+                    });
+                }
+
+                return quizzes;
+            }
+        }
+
+        public List<Quiz> GetQuizTypes()
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("SELECT DISTINCT QuizType FROM Quizzes", connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        List<Quiz> quizTypes = new List<Quiz>();
+                        while (reader.Read())
+                        {
+                            Quiz quiz = new Quiz();
+                            quiz.QuizType = reader["QuizType"].ToString();
+                            quizTypes.Add(quiz);
+                        }
+                        return quizTypes;
+                    }
+                }
+            }
+
+        }
+
+        public List<Quiz> GetQuizzesByType(string quizType)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = connection;
+                    command.CommandText = "SELECT QuizID, QuizName, QuizType, TimeLimit FROM Quizzes WHERE QuizType = @quizType";
+                    command.Parameters.AddWithValue("@quizType", quizType);
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        List<Quiz> quizzes = new List<Quiz>();
+                        while (reader.Read())
+                        {
+                            Quiz quiz = new Quiz()
+                            {
+                                QuizID = reader.GetInt32(0),
+                                QuizName = reader.GetString(1),
+                                QuizType = reader.GetString(2),
+                                TimeLimit = reader.GetInt32(3)
+                            };
+                            quizzes.Add(quiz);
+                        }
+                        return quizzes;
+                    }
+                }
+            }
+        }
+
+        public List<Question> GetQuestionsByCategory(string category)
+        {
+            var questions = new List<Question>();
+
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+
+                var selectSql = "SELECT * FROM Questions WHERE Category = @category";
+                using (var selectCommand = new SqlCommand(selectSql, connection))
+                {
+                    selectCommand.Parameters.AddWithValue("@category", category);
+
+                    using (var reader = selectCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var question = new Question
+                            {
+                                QuestionID = (int)reader["QuestionID"],
+                                QuestionText = (string)reader["QuestionText"],
+                                CategoryID = (int)reader["CategoryID"],
+                                AnswerText = (string)reader["Answer"]
+                            };
+
+                            questions.Add(question);
+                        }
+                    }
+                }
+            }
+
+            return questions;
+        }
+
         /// <summary>
         /// GetByID(int id) - Retrieves a specific quiz by its ID
         /// </summary>
@@ -42,7 +184,7 @@ namespace QuizApp.DAO
             {
                 connection.Open();
 
-                using (SqlCommand command = new SqlCommand("SELECT * FROM Quizzes WHERE QuizID = @QuizID", connection))
+                using (SqlCommand command = new SqlCommand("SELECT * FROM Quiz WHERE QuizID = @QuizID", connection))
                 {
                     command.Parameters.AddWithValue("@QuizID", quizId);
 
@@ -81,7 +223,7 @@ namespace QuizApp.DAO
             {
                 connection.Open();
 
-                using (SqlCommand command = new SqlCommand("SELECT * FROM Quizzes", connection))
+                using (SqlCommand command = new SqlCommand("SELECT * FROM Quiz", connection))
                 {
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
@@ -191,6 +333,22 @@ namespace QuizApp.DAO
         }
 
 
+
+        public void IncrementScore(int quizID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("UPDATE Quiz SET Score = Score + 1 WHERE QuizID = @quizID", connection))
+                {
+                    command.Parameters.AddWithValue("@quizID", quizID);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+
+
         /// <summary>
         /// GetQuestions(int quizID) - Retrieves all questions for a specific quiz
         /// </summary>
@@ -201,7 +359,7 @@ namespace QuizApp.DAO
             using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
                 connection.Open();
-                using (SqlCommand command = new SqlCommand("SELECT q.* FROM Questions q JOIN QuizQuestion qq ON q.QuestionID = qq.QuestionID WHERE qq.QuizID = @QuizID", connection))
+                using (SqlCommand command = new SqlCommand("SELECT q.* FROM Question q JOIN QuizQuestion qq ON q.QuestionID = qq.QuestionID WHERE qq.QuizID = @QuizID", connection))
                 {
                     command.Parameters.AddWithValue("@QuizID", quizID);
 
@@ -442,7 +600,7 @@ namespace QuizApp.DAO
             using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
                 connection.Open();
-                using (SqlCommand command = new SqlCommand("SELECT * FROM Quizzes WHERE QuizID = @QuizID", connection))
+                using (SqlCommand command = new SqlCommand("SELECT * FROM Quiz WHERE QuizID = @QuizID", connection))
                 {
                     command.Parameters.AddWithValue("@QuizID", id);
 

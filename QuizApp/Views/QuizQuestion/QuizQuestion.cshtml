@@ -1,0 +1,61 @@
+﻿@model QuizApp.Models.QuizQuestionViewModel
+
+<h2>Quiz: @Model.Quiz.QuizName</h2>
+<div class="question-container">
+    <h3>Question @(Model.CurrentQuestion + 1):</h3>
+    <p>@Model.Questions[Model.CurrentQuestion].QuestionText</p>
+@*    <form asp-controller="QuizQuestion" asp-action="Next">
+        <input type="hidden" name="quizID" value="@Model.Quiz.QuizID" />
+        <input type="hidden" name="currentQuestion" value="@Model.CurrentQuestion" />
+        <ul>
+            @foreach (var answer in Model.Questions[Model.CurrentQuestion].Answers)
+            {
+                <li>
+                    <input type="radio" name="answerID" value="@answer.AnswerID" />
+                    @answer.AnswerText
+                </li>
+            }
+        </ul>
+        <input type="submit" value="Next" class="btn btn-primary" />
+    </form>*@
+</div>
+<div class="navigation-container">
+    <form asp-controller="QuizQuestion" asp-action="Previous">
+        <input type="hidden" name="quizID" value="@Model.Quiz.QuizID" />
+        <input type="hidden" name="currentQuestion" value="@Model.CurrentQuestion" />
+        <input type="submit" value="Previous" class="btn btn-secondary" disabled="@(Model.CurrentQuestion == 0)" />
+    </form>
+    <form asp-controller="QuizQuestion" asp-action="Submit">
+        <input type="hidden" name="quizID" value="@Model.Quiz.QuizID" />
+        <input type="hidden" name="currentQuestion" value="@Model.CurrentQuestion" />
+        <input type="submit" value="Submit Quiz" class="btn btn-danger" />
+    </form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Question</th>
+            <th>Answer</th>
+        </tr>
+    </thead>
+    <tbody>
+@for (int i = 0; i < Model.Questions.Count; i++)
+{
+    <div>
+        <label>@Model.Questions[i].QuestionText</label>
+        @for (int j = 0; j < Model.Answers[i].Count; j++)
+        {
+            <input type="radio" name="answer" value="@Model.Answers[i][j].AnswerID" id="@Model.Answers[i][j].AnswerID" /><label for="@Model.Answers[i][j].AnswerID">@Model.Answers[i][j].AnswerText</label>
+        }
+    </div>
+
+        }
+    </tbody>
+</table>
+<input type="button" value="Previous" onclick="location.href='@Url.Action("Previous", "QuizQuestion", new { quizID = Model.Quiz.QuizID, currentQuestion = Model.CurrentQuestion })" class="btn btn-primary" />
+<input type="submit" value="Submit Quiz" class="btn btn-danger" formaction="@Url.Action("Submit", "QuizQuestion")" formmethod="post" />
+
+
+
+
+

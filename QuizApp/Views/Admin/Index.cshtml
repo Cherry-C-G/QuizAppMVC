@@ -1,0 +1,25 @@
+﻿@model IEnumerable<QuizApp.Models.Quiz>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Quiz Name</th>
+      @*      <th>User</th>*@
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.QuizName</td>
+               @* <td>@item.User.Username</td>*@
+                <td>
+                    <a asp-controller="Admin" asp-action="CheckAnswers" asp-route-id="@item.QuizID">Check Answers</a> |
+                    <a asp-controller="Admin" asp-action="ViewFeedback" asp-route-id="@item.QuizID">View Feedback</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a asp-controller="Admin" asp-action="Index" class="btn btn-primary">Back to User List</a>

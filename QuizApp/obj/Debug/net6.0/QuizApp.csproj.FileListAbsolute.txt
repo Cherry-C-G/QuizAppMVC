@@ -81,3 +81,5 @@ C:\Beaconfire\Wk4Day4Agile&Git\QuizApp\QuizApp\obj\Debug\net6.0\QuizApp.pdb
 C:\Beaconfire\Wk4Day4Agile&Git\QuizApp\QuizApp\obj\Debug\net6.0\QuizApp.genruntimeconfig.cache
 C:\Beaconfire\Wk4Day4Agile&Git\QuizApp\QuizApp\obj\Debug\net6.0\ref\QuizApp.dll
 C:\Beaconfire\Wk4Day4Agile&Git\QuizApp\QuizApp\bin\Debug\net6.0\RestSharp.dll
+C:\Beaconfire\Wk4Day4Agile&Git\QuizApp\QuizApp\bin\Debug\net6.0\AutoMapper.dll
+C:\Beaconfire\Wk4Day4Agile&Git\QuizApp\QuizApp\bin\Debug\net6.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll

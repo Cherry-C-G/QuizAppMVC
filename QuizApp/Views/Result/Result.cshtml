@@ -1,0 +1,54 @@
+﻿@model QuizApp.Models.Result
+
+<h1>Quiz Result</h1>
+<div>
+    <p>Quiz Name: @Model.QuizID</p>
+    <p>User Name: @Model.UserID</p>
+    <p>Start Time: @Model.StartTime</p>
+    <p>End Time: @Model.EndTime</p>
+</div>
+<div>
+    <h2>Question Results</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>Answer</th>
+                <th>Correct</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var question in Model.Questions)
+            {
+                <tr>
+                    <td>@question.QuestionText</td>
+                    <td>@question.Answer.AnswerText</td>
+                    <td>
+                        @if (question.Answer.IsCorrect)
+                        {
+                            <span>Correct</span>
+                        }
+                        else
+                        {
+                            <span>Incorrect</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+        </table>
+</div>
+<div>
+    <p>Total Score: @Model.Score</p>
+    @if (Model.Score >= 6)
+    {
+        <p>Congratulations, you passed the quiz!</p>
+    }
+    else
+    {
+        <p>Sorry, you did not pass the quiz. Better luck next time!</p>
+    }
+</div>
+<div>
+    <a asp-controller="Home" asp-action="Index">Take another quiz</a>
+</div>

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using QuizApp.DAO;
 using QuizApp.Models;
 
@@ -10,13 +11,17 @@ namespace QuizApp.Controllers
         private readonly QuestionDAO _questionDAO;
         private readonly QuizQuestionDAO _quizQuestionDAO;
         private readonly CategoryDAO _categoryDAO;
+        private readonly AnswerDAO _answerDAO;
 
-        public QuizQuestionController(QuizDAO quizDAO, QuestionDAO questionDAO, QuizQuestionDAO quizQuestionDAO, CategoryDAO categoryDAO)
+
+        public QuizQuestionController(QuizDAO quizDAO, QuestionDAO questionDAO, QuizQuestionDAO quizQuestionDAO, CategoryDAO categoryDAO, AnswerDAO answerDAO)
         {
             _quizDAO = quizDAO;
             _questionDAO = questionDAO;
             _quizQuestionDAO = quizQuestionDAO;
             _categoryDAO = categoryDAO;
+            _answerDAO = answerDAO;
+           
         }
 
         // GET: QuizQuestion/Start
@@ -24,14 +29,27 @@ namespace QuizApp.Controllers
         {
             // Retrieve quiz and question information
             Quiz quiz = _quizDAO.GetByID(quizID);
+           // var quizQuestioniewModel = _mapper.Map<QuizQuestionViewModel>(quiz);
             List<Question> questions = _questionDAO.GetRandomQuestions(quizID, 10);
             List<Category> categories = _categoryDAO.GetAll();
+            List<List<Answer>> answers = new List<List<Answer>>();
+            foreach (var question in questions)
+            {
+                answers.Add(_answerDAO.GetByQuestionID(question.QuestionID));
+            }
+            // Retrieve answers for each question
+            foreach (Question question in questions)
+            {
+                answers.Add(_questionDAO.GetAnswers(question.QuestionID));
+            }
+
 
             // Set up view model
             QuizQuestionViewModel viewModel = new QuizQuestionViewModel
             {
                 Quiz = quiz,
                 Questions = questions,
+                Answers = answers,
                 Categories = categories,
                 CurrentQuestion = 0,
                 TimeRemaining = _quizDAO.GetTimeRemaining(quizID, userID)
@@ -148,5 +166,25 @@ namespace QuizApp.Controllers
             _quizDAO.SubmitQuiz(quizID);
             return RedirectToAction("QuizResult", "Quiz", new { quizID = quizID });
         }
+
+        [HttpPost]
+        public ActionResult CheckAnswer(int quizID, int questionID, int answerID)
+        {
+            // Save the answer
+            _quizQuestionDAO.SaveAnswer(quizID, questionID, answerID);
+
+            // Check if the answer is correct
+            bool isCorrect = _quizQuestionDAO.IsAnswerCorrect(quizID, questionID, answerID);
+
+            // If the answer is correct, increment the score
+            if (isCorrect)
+            {
+                _quizDAO.IncrementScore(quizID);
+            }
+
+            // Return the result to the view
+            return Json(new { isCorrect });
+        }
+
     }
 }

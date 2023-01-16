@@ -1,0 +1,32 @@
+﻿@model QuizApp.Models.QuizQuestionViewModel
+
+<h2>@Model.Quiz.QuizName</h2>
+<h3>Quiz Type: @Model.Quiz.QuizType</h3>
+<h3>Time Limit: @Model.Quiz.TimeLimit minutes</h3>
+<form method="post">
+    <table>
+        <thead>
+            <tr>
+                <th>Question</th>
+                <th>Answer</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Questions.Count; i++)
+            {
+                <tr>
+                    <td>@Model.Questions[i].QuestionText</td>
+                    <td>
+                        <input type="radio" name="question_@i" value="@Model.Questions[i].Answer1." />@Model.Questions[i].Answer1<br />
+                        <input type="radio" name="question_@i" value="@Model.Questions[i].Answer2" />@Model.Questions[i].Answer2<br />
+                        <input type="radio" name="question_@i" value="@Model.Questions[i].Answer3" />@Model.Questions[i].Answer3<br />
+                        <input type="radio" name="question_@i" value="@Model.Questions[i].Answer4" />@Model.Questions[i].Answer4<br />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <input type="submit" value="Submit Quiz" />
+</form>
+
+                       

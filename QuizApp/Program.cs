@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using QuizApp.Controllers;
 using QuizApp.DAO;
+using AutoMapper;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +16,8 @@ builder.Services.AddScoped<AnswerDAO>();
 builder.Services.AddScoped<ResultDAO>();
 builder.Services.AddScoped<FeedbackDAO>();
 builder.Services.AddScoped<QuizQuestionDAO>();
+builder.Services.AddSession();
+//builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
@@ -38,7 +43,7 @@ app.UseRouting();
 app.UseAuthentication();
 
 app.UseAuthorization();
-
+app.UseSession();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using QuizApp.DAO;
 using QuizApp.Models;
 
@@ -17,6 +18,7 @@ namespace QuizApp.Controllers
         private readonly AnswerDAO _answerDAO;
         private readonly ResultDAO _resultDAO;
         private readonly QuizQuestionDAO _quizQuestionDAO;
+       // private readonly IMapper _mapper;
         public QuizController(QuizDAO quizDAO, QuestionDAO questionDAO, AnswerDAO answerDAO, ResultDAO resultDAO, QuizQuestionDAO quizQuestionDAO)
         {
             _quizDAO = quizDAO;
@@ -24,11 +26,15 @@ namespace QuizApp.Controllers
             _answerDAO = answerDAO;
             _resultDAO = resultDAO;
             _quizQuestionDAO = quizQuestionDAO;
+           // _mapper = mapper;
         }
         public ActionResult Index()
         {
-            List<Quiz> quizzes = _quizDAO.GetAll();
-            return View(quizzes);
+        
+            
+            List<Quiz> quiz = _quizDAO.GetAll();
+           
+            return View(quiz);
         }
 
         public ActionResult Create()
@@ -48,31 +54,47 @@ namespace QuizApp.Controllers
             HttpContext.Session.SetInt32("timeRemaining", quiz.TimeLimit);
             return RedirectToAction("QuizScreen");
         }
-
-        // GET: Quiz/QuizScreen
-        public ActionResult QuizScreen()
+        public IActionResult QuizScreen(string category)
         {
-            int? quizID = HttpContext.Session.GetInt32("quizID");
-            if (quizID == null)
+            // Use the QuizDAO to get the questions for the selected category
+            var questions = _quizDAO.GetQuestionsByCategory(category);
+
+            // Create a new QuizViewModel to hold the questions and other information needed for the view
+            var model = new QuizQuestionViewModel
             {
-                return RedirectToAction("Home");
-            }
-            Quiz quiz = _quizDAO.GetByID((int)quizID);
-            List<Question> questions = _quizDAO.GetQuestions((int)quizID);
-            int? timeRemaining = HttpContext.Session.GetInt32("timeRemaining");
-            if (timeRemaining == null)
-            {
-                timeRemaining = quiz.TimeLimit;
-            }
-            QuizQuestionViewModel viewModel = new QuizQuestionViewModel
-            {
-                Quiz = quiz,
                 Questions = questions,
-                CurrentQuestion = 0,
-                TimeRemaining = (int)timeRemaining
             };
-            return View(viewModel);
+
+            // Return the QuizScreen view, passing the QuizViewModel as the model
+            return View("QuizScreen", model);
         }
+
+
+        //// GET: Quiz/QuizScreen
+        //public ActionResult QuizScreen()
+        //{
+        //    int? quizID = HttpContext.Session.GetInt32("quizID");
+        //    if (quizID == null)
+        //    {
+        //        return RedirectToAction("Home");
+        //    }
+        //    Quiz quiz = _quizDAO.GetByID((int)quizID);
+        //    List<Question> questions = _quizDAO.GetQuestionsByCategory(Categories);
+        //    int? timeRemaining = HttpContext.Session.GetInt32("timeRemaining");
+        //    if (timeRemaining == null)
+        //    {
+        //        timeRemaining = quiz.TimeLimit;
+        //    }
+
+        //    QuizQuestionViewModel viewModel = new QuizQuestionViewModel
+        //    {
+        //        Quiz = quiz,
+        //        Questions = questions,
+        //        CurrentQuestion = 0,
+        //        TimeRemaining = (int)timeRemaining
+        //    };
+        //    return View(viewModel);
+        //}
 
         // POST: Quiz/NextQuestion
         [HttpPost]
@@ -99,25 +121,76 @@ namespace QuizApp.Controllers
             viewModel.QuestionStyles = _quizDAO.GetQuestionStyles(viewModel.Quiz.QuizID, viewModel.CurrentQuestion);
 
             // return view
-            return View("Quiz", viewModel);
+            return View("QuizScreen", viewModel);
         }
 
+        public IActionResult Categories()
+        {
+            List<Quiz> quizTypes = _quizDAO.GetQuizTypes();
+            return View(quizTypes);
+        }
+        public IActionResult SelectCategory(string quizType)
+        {
+            List<Quiz> quizzes = _quizDAO.GetQuizzesByType(quizType);
+            return View(quizzes);
+        }
 
-        //public ActionResult TakeQuiz(int quizId)
+        public IActionResult TakeQuiz(string category)
+        {
+            //Quiz quiz = _quizDAO.Create(newQuiz);
+            List<Question> questions = _quizDAO.GetQuestionsByCategory(category);
+
+            QuizQuestionViewModel viewModel = new QuizQuestionViewModel()
+            {
+                //Quiz = quiz,
+                Questions = questions
+            };
+
+            return View(viewModel);
+        }
+        public IActionResult QuizTypes()
+        {
+            QuizDAO quizDAO = _quizDAO;
+            List<Quiz> quizTypes = quizDAO.GetQuizTypes();
+            return View(quizTypes);
+        }
+        public IActionResult DisplayCategory(string quizType)
+        {
+            var quizzes = _quizDAO.GetQuizzesByType(quizType);
+            return View(quizzes);
+        }
+
+        //public IActionResult SelectCategory(string quizType)
         //{
-        //    var quiz = _quizDAO.GetQuizById(quizId);
-        //    var questions = _questionDAO.GetQuestionsByQuizId(quizId);
-        //    var answers = _answerDAO.GetAnswersByQuizId(quizId);
+        //    var questions = _questionDAO.GetQuestionsByType(quizType);
+        //    return View(questions);
+        //}
+        //public IActionResult TakeQuizQuestion(string category)
+        //{
+        //    var questions = _quizDAO.GetQuestionsByCategory(category);
 
-        //    var model = new QuizViewModel
+        //    var viewModel = new QuizQuestionViewModel
         //    {
-        //        Quiz = quiz,
-        //        Questions = questions,
-        //        Answers = answers
+        //        Questions = (List<Question>)questions
         //    };
 
-        //    return View(model);
+        //    return View(viewModel);
         //}
+        [HttpPost]
+        public IActionResult SubmitQuiz(QuizQuestionViewModel viewModel)
+        {
+            int score = 0;
+            for (int i = 0; i < viewModel.Questions.Count; i++)
+            {
+                if (viewModel.Questions[i].SelectedAnswer == viewModel.Questions[i].CorrectAnswer)
+                {
+                    score++;
+                }
+            }
+
+            return View(score);
+        }
+
 
         public ActionResult PreviousQuestion(QuizQuestionViewModel viewModel)
         {
@@ -133,25 +206,25 @@ namespace QuizApp.Controllers
             viewModel.QuestionStyles = _quizDAO.GetQuestionStyles(viewModel.Quiz.QuizID, viewModel.CurrentQuestion);
 
             // return view
-            return View("Quiz", viewModel);
+            return View("QuizScreen", viewModel);
         }
 
-        [HttpPost]
-        public ActionResult SubmitQuiz(QuizQuestionViewModel viewModel)
-        {
-            // check if all questions have been answered
-            if (!_quizDAO.CheckIfAllQuestionsAnswered(viewModel.Quiz.QuizID, viewModel.UserID))
-            {
-                TempData["notAllAnswered"] = true;
-                return View("Quiz", viewModel);
-            }
+        //[HttpPost]
+        //public ActionResult SubmitQuiz(QuizQuestionViewModel viewModel)
+        //{
+        //    // check if all questions have been answered
+        //    if (!_quizDAO.CheckIfAllQuestionsAnswered(viewModel.Quiz.QuizID, viewModel.UserID))
+        //    {
+        //        TempData["notAllAnswered"] = true;
+        //        return View("QuizScreen", viewModel);
+        //    }
 
-            // save the score to the database
-            _resultDAO.SaveScore(viewModel.Quiz.QuizID, viewModel.UserID, _resultDAO.CalculateScore(viewModel.Quiz.QuizID, viewModel.UserID, viewModel.AnswerText));
+        //    // save the score to the database
+        //    _resultDAO.SaveScore(viewModel.Quiz.QuizID, viewModel.UserID, _resultDAO.CalculateScore(viewModel.Quiz.QuizID, viewModel.UserID, viewModel.AnswerText));
 
-            // redirect to results
-            return RedirectToAction("Results", new { quizID = viewModel.Quiz.QuizID });
-        }
+        //    // redirect to results
+        //    return RedirectToAction("Results", new { quizID = viewModel.Quiz.QuizID });
+        //}
 
         public ActionResult Results(int quizID)
         {

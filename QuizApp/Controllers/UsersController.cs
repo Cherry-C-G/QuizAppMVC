@@ -52,17 +52,17 @@ namespace QuizApp.Controllers
                 _userDAO.Create(user);
                 return RedirectToAction("Index");
             }
-            return View();
+            return View("Login");
         }
 
         /// <summary>
         /// Login - for handling user login
         /// </summary>
         /// <returns></returns>
-        public ActionResult Login()
-        {
-            return View();
-        }
+        //public ActionResult Login()
+        //{
+        //    return View();
+        //}
         //[AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]

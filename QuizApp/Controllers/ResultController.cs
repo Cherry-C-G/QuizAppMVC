@@ -15,12 +15,14 @@ namespace QuizApp.Controllers
         private readonly QuizDAO _quizDAO;
         private readonly UsersDAO _usersDAO;
         private readonly QuizQuestionDAO _quizQuestionDAO;
-        public ResultController(ResultDAO resultDAO, QuizDAO quizDAO, UsersDAO usersDAO, QuizQuestionDAO quizQuestionDAO)
+        private readonly QuestionDAO _questionDAO;
+        public ResultController(ResultDAO resultDAO, QuizDAO quizDAO, UsersDAO usersDAO, QuizQuestionDAO quizQuestionDAO, QuestionDAO questionDAO)
         {
             _resultDAO = resultDAO;
             _quizDAO = quizDAO;
             _usersDAO = usersDAO;
             _quizQuestionDAO = quizQuestionDAO;
+            _questionDAO = questionDAO;
         }
         /// <summary>
         /// DeleteResult(int resultID): This method would be responsible for deleting a specific result from the database.
@@ -174,7 +176,6 @@ namespace QuizApp.Controllers
             {
                 Result = result,
                 QuizName = quizName,
-                UserFullName = userFullName,
                 QuizQuestions = quizQuestions,
                 Passed = passed
             };
@@ -244,5 +245,13 @@ namespace QuizApp.Controllers
         {
             throw new NotImplementedException("No Result found.");
         }
+        //public ActionResult Result(int id)
+        //{
+        //    Result result = new Result();
+        //    result.Questions = _questionDAO.GetByQuizIDAndUserID(id, User.Identity.GetUserId());
+
+        //    return View(result);
+        //}
+
     }
 }

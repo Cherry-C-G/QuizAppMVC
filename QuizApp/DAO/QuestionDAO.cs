@@ -51,6 +51,56 @@ namespace QuizApp.DAO
             }
         }
 
+        public List<Answer> GetAnswers(int questionID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT * FROM Answers WHERE QuestionID = @QuestionID", connection);
+                command.Parameters.AddWithValue("@QuestionID", questionID);
+                SqlDataReader reader = command.ExecuteReader();
+                List<Answer> answers = new List<Answer>();
+                while (reader.Read())
+                {
+                    Answer answer = new Answer
+                    {
+                        AnswerID = (int)reader["AnswerID"],
+                        QuestionID = (int)reader["QuestionID"],
+                        AnswerText = (string)reader["AnswerText"],
+                        IsCorrect = (bool)reader["IsCorrect"]
+                    };
+                    answers.Add(answer);
+                }
+                return answers;
+            }
+        }
+
+        public IEnumerable<Question> GetByQuizID(int quizID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("SELECT * FROM Questions WHERE QuizID = @quizID", connection))
+                {
+                    command.Parameters.AddWithValue("@quizID", quizID);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        List<Question> questions = new List<Question>();
+                        while (reader.Read())
+                        {
+                            questions.Add(new Question
+                            {
+                                QuestionID = (int)reader["QuestionID"],
+                                QuestionText = (string)reader["QuestionText"],
+                                QuestionType = (string)reader["QuestionType"]
+                            });
+                        }
+                        return questions;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// GetAll() - Retrieves all questions
         /// </summary>
@@ -125,7 +175,7 @@ namespace QuizApp.DAO
             using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
                 connection.Open();
-                using (SqlCommand command = new SqlCommand("SELECT * FROM Questions ", connection))
+                using (SqlCommand command = new SqlCommand("SELECT * FROM Question ", connection))
                 {
                     command.Parameters.AddWithValue("@quizID", quizID);
                     using (SqlDataReader reader = command.ExecuteReader())
@@ -145,6 +195,41 @@ namespace QuizApp.DAO
                 }
             }
         }
+
+        public List<Question> GetByQuizIDAndUserID(int id)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                using (SqlCommand cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT q.QuestionID, q.QuestionText, q.QuizID, a.AnswerID, a.AnswerText, a.IsCorrect
+                                        FROM Question q 
+                                        JOIN Answer a on q.AnswerID = a.AnswerID
+                                        WHERE q.QuizID = @id";
+                    cmd.Parameters.AddWithValue("@id", id);
+                    var reader = cmd.ExecuteReader();
+                    var questions = new List<Question>();
+                    while (reader.Read())
+                    {
+                        questions.Add(new Question()
+                        {
+                            QuestionID = (int)reader["QuestionID"],
+                            QuestionText = (string)reader["QuestionText"],
+                            Answer = new Answer
+                            {
+                                AnswerID = (int)reader["AnswerID"],
+                                AnswerText = (string)reader["AnswerText"],
+                                IsCorrect = (bool)reader["IsCorrect"],
+                            }
+                        });
+                    }
+                    return questions;
+                }
+            }
+        }
+
+
 
         public Question GetNextQuestion(int quizID, int currentQuestion)
         {

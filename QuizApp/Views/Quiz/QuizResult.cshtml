@@ -1,0 +1,28 @@
+﻿@model QuizApp.Models.QuizResultViewModel
+
+<h1>Quiz Result</h1>
+<h2>@Model.Quiz.QuizName</h2>
+<h3>Score: @Model.Score</h3>
+<h3>Passing Score: @Model.Quiz.PassingScore</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Question</th>
+            <th>Correct Answer</th>
+            <th>Your Answer</th>
+            <th>Result</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var question in Model.Questions)
+        {
+            <tr>
+                <td>@question.QuestionText</td>
+@*                <td>@question.CorrectAnswerText</td>
+                <td>@question.AnswerText</td>
+                <td>@(question.IsCorrect ? "Correct" : "Incorrect")</td>*@
+            </tr>
+        }
+    </tbody>
+</table>
+<a asp-action="Index">Back to Quizzes</a>

@@ -1,0 +1,25 @@
+﻿@model List<QuizApp.Models.Answer>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Answer ID</th>
+            <th>Question ID</th>
+            <th>Answer Text</th>
+            <th>Is Correct</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var answer in Model)
+        {
+            <tr>
+                <td>@answer.AnswerID</td>
+                <td>@answer.QuestionID</td>
+                <td>@answer.AnswerText</td>
+                <td>@answer.IsCorrect</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a asp-action="Create">Create</a>
+<a asp-action="Index">Back to List</a>

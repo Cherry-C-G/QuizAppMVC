@@ -12,7 +12,8 @@
             <th>Quiz Name</th>
             <th>Quiz Type</th>
             <th>Time Limit</th>
-           @* <th>Questions</th>*@
+            <th>Select</th>
+
         </tr>
     </thead>
     <tbody>
@@ -23,11 +24,14 @@
                 <td>@quiz.QuizType</td>
                 <td>@quiz.TimeLimit</td>
                @* <td>@quiz.Question.Count()</td>*@
-                <td><a asp-controller="Quiz" asp-action="Details" asp-route-id="@quiz.QuizID">Details</a></td>
+                <td><a asp-controller="Quiz" asp-action="TakeQuiz" asp-route-id="@quiz.QuizID">TakeQuiz</a></td>
             </tr>
         }
     </tbody>
 </table>
+@*@model List<QuizApp.Models.Quiz>*@
+
+
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>

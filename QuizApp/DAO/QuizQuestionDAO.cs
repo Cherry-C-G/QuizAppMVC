@@ -388,6 +388,59 @@ namespace QuizApp.DAO
                 }
             }
         }
+
+        public void SaveAnswer(int quizID, int questionID, int answerID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("INSERT INTO QuizQuestions (QuizID, QuestionID, AnswerID) VALUES (@QuizID, @QuestionID, @AnswerID)", connection);
+                command.Parameters.AddWithValue("@QuizID", quizID);
+                command.Parameters.AddWithValue("@QuestionID", questionID);
+                command.Parameters.AddWithValue("@AnswerID", answerID);
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public int GetCorrectAnswerID(int questionID)
+        {
+            int correctAnswerID = 0;
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand("SELECT AnswerID FROM Answers WHERE QuestionID = @QuestionID AND IsCorrect = 1", connection);
+                command.Parameters.AddWithValue("@QuestionID", questionID);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    correctAnswerID = (int)reader["AnswerID"];
+                }
+            }
+            return correctAnswerID;
+        }
+
+        public bool IsAnswerCorrect(int quizID, int questionID, int answerID)
+        {
+            using (SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                connection.Open();
+                using (SqlCommand command = new SqlCommand("SELECT COUNT(*) FROM QuizQuestion WHERE QuizID = @quizID AND QuestionID = @questionID AND AnswerID = @answerID AND AnswerID IN (SELECT AnswerID FROM Answer WHERE IsCorrect = 1)", connection))
+                {
+                    command.Parameters.AddWithValue("@quizID", quizID);
+                    command.Parameters.AddWithValue("@questionID", questionID);
+                    command.Parameters.AddWithValue("@answerID", answerID);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return reader.GetInt32(0) > 0;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
         /// <summary>
         /// GetCorrectAnswers(int quizID)
         /// </summary>
